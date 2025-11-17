@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace DLme\Core;
 
 use DateTimeInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Core service for managing seller availability.
@@ -18,7 +20,8 @@ final class AvailabilityService
 {
     public function __construct(
         private readonly SellerAvailabilityRepository $repository,
-        private readonly TimezoneProvider $timezoneProvider
+        private readonly TimezoneProvider $timezoneProvider,
+        private readonly LoggerInterface $logger = new NullLogger()
     ) {
     }
 
@@ -73,6 +76,12 @@ final class AvailabilityService
     public function setAvailableNow(int $sellerId, bool $available): void
     {
         $this->repository->setAvailableNowFlag($sellerId, $available);
+
+        $this->logger->info('dlme.availability.flag_changed', [
+            'seller_id'           => $sellerId,
+            'availability_status' => $available ? AvailabilityStatus::AVAILABLE_NOW->value : AvailabilityStatus::OFFLINE->value,
+            'available'           => $available,
+        ]);
     }
 
     /**
