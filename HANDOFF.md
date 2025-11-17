@@ -430,6 +430,52 @@ Add framework-agnostic availability core with TDD approach:
 
 **Commit**: `5e63803`
 
+### Design Decisions
+
+Before implementation, several ambiguities in the spec were resolved:
+
+#### 1. CtaStyleConfig Labels & CSS Keys
+**Question**: Are spec labels ("Talk to me now", "Contact me") literal button text or visual descriptions?
+
+**Decision**: Both labels displayed on buttons AND visual treatment. Small, classy Apple Store-style buttons with exact labels from spec.
+
+#### 2. PaymentHandoffPayload Metadata Type
+**Question**: Metadata is `array<string,string>` but contains int/enum values (seller_id, cta_type). Should we stringify, use mixed, or JSON-encode?
+
+**Decision**: Stringify all values. All metadata values converted to strings for consistent type safety.
+
+#### 3. Payment Metadata Key List
+**Question**: Spec lists 7 example keys ("like"). Should we include exactly those, or add workflow attributes, referrer, correlation ID?
+
+**Decision**: Include all: 7 required keys + workflow context attributes + optional fields (referrerUrl, correlationId, buyerId, productId, sku).
+
+#### 4. PostPaymentWorkflow Invocation
+**Question**: Should workflow be called only on first PENDING→SUCCEEDED transition, or on every `markPaymentSuccessful()` call?
+
+**Decision**: Service calls workflow on every `markPaymentSuccessful()` call. Repository prevents duplicate state transitions (idempotency at DB level).
+
+#### 5. markSucceededWithPayment Return Value
+**Question**: Should it return null when session already SUCCEEDED (idempotent retry), or only when not found?
+
+**Decision**: Return existing session if already SUCCEEDED (idempotent), null only if not found by idempotency key.
+
+#### 6. CtaDecision.enabled Rules
+**Question**: Spec only says "false for non-instant products". What about other cases?
+
+**Decision**: Enabled only for AVAILABLE_NOW + instant consult, but made configurable via `CtaEnabledPolicy` interface (not hardcoded). Default policy provided.
+
+#### 7. Session ID Format
+**Question**: UUID format preference (UUIDv4, prefixed, timestamp-based)?
+
+**Decision**: UUIDv4 with `sess_` prefix (e.g., `sess_a1b2c3d4-e5f6-7890-abcd-ef1234567890`).
+
+#### 8. Idempotency Behavior
+**Question**: When `startFromClick()` called with existing key, return unchanged or throw?
+
+**Decision**: Full idempotency - return existing session regardless of status (PENDING, SUCCEEDED, FAILED).
+
+---
+
 ### What Was Implemented
 
 #### 1. CTA / Buy Button Core
