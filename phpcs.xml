@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="DLme Marketplace">
+    <description>PHPCS ruleset for the DLme marketplace project.</description>
+
+    <file>src/wp-content/plugins/dlme-marketplace/src</file>
+    <file>tests</file>
+
+    <arg value="sp"/>
+
+    <config name="show_progress" value="1"/>
+
+    <rule ref="PSR12"/>
+    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="WordPress-Extra"/>
+
+    <config name="testVersion" value="8.2-"/>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>src/wp-admin/*</exclude-pattern>
+    <exclude-pattern>src/wp-includes/*</exclude-pattern>
+</ruleset>

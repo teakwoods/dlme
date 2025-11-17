@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_NAME: dlme_wp
+      DB_USER: dlme_user
+      DB_PASSWORD: test_password
+      DB_ROOT_PASSWORD: root_password
+      WP_URL: http://localhost:8080
+      WP_TITLE: "DLme Marketplace (CI)"
+      WP_ADMIN_USER: ci_admin
+      WP_ADMIN_PASS: ci_admin_password
+      WP_ADMIN_EMAIL: ci@example.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build dev images
+        run: docker compose --profile dev build
+
+      - name: Start dev stack
+        run: docker compose --profile dev up -d
+
+      - name: Wait for app to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:8080 > /dev/null; then
+              echo "App is up!";
+              exit 0;
+            fi
+            echo "Waiting for app..."
+            sleep 5
+          done
+          echo "App did not start in time"
+          exit 1
+
+      - name: Install Composer dependencies
+        run: |
+          docker compose --profile dev run --rm wordpress composer install
+
+      - name: PHP Lint (PHPCS)
+        run: make lint
+
+      - name: PHP Static Analysis (PHPStan)
+        run: make analyse
+
+      - name: PHP Tests (Pest)
+        run: make test
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E Tests (Playwright)
+        env:
+          E2E_BASE_URL: http://localhost:8080
+        run: npm run test:e2e
+
+      - name: Tear down dev stack
+        if: always()
+        run: docker compose --profile dev down -v

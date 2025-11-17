@@ -1,0 +1,15 @@
+parameters:
+  level: 6
+
+  paths:
+    - src/wp-content/plugins/dlme-marketplace/src
+
+  bootstrapFiles:
+    - tests/bootstrap.php
+
+  checkMissingIterableValueType: true
+  checkMissingCallableSignature: true
+
+  ignoreErrors:
+    - '#Access to an undefined property \$wpdb->#'
+    - '#Call to an undefined function (do_action|apply_filters)#'

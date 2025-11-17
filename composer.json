@@ -1,0 +1,38 @@
+{
+  "name": "yourname/dlme",
+  "description": "DLme WooCommerce + Bookings multi-vendor consulting marketplace",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.11",
+    "squizlabs/php_codesniffer": "^3.9",
+    "wp-coding-standards/wpcs": "^3.0",
+    "pestphp/pest": "^3.0",
+    "pestphp/pest-plugin-phpunit": "^3.0",
+    "nunomaduro/collision": "^8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DLme\\": "src/wp-content/plugins/dlme-marketplace/src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "DLme\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "phpcs",
+    "lint-fix": "phpcbf",
+    "analyse": "phpstan analyse",
+    "test": "pest",
+    "test-unit": "pest --type=unit",
+    "test-feature": "pest --type=feature"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

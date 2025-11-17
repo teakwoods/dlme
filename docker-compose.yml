@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wpnet
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WP_ENV: ${WP_ENV:-development}
+      WP_URL: ${WP_URL}
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - wpnet
+
+  nginx:
+    image: nginx:1.27
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - ./src:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - wpnet
+
+  wpcli:
+    build:
+      context: .
+      dockerfile: docker/wp-cli/Dockerfile
+    user: "33:33"
+    depends_on:
+      - db
+      - wordpress
+    volumes:
+      - ./src:/var/www/html
+      - ./scripts:/var/www/html/scripts:ro
+      - ./config:/var/www/html/config:ro
+    networks:
+      - wpnet
+    entrypoint: ["wp"]
+    profiles: ["dev"]
+
+volumes:
+  db_data:
+
+networks:
+  wpnet:

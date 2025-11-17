@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    beStrictAboutTestsThatDoNotTestAnything="false"
+    beStrictAboutOutputDuringTests="true"
+    failOnRisky="true"
+    failOnWarning="true"
+>
+    <testsuites>
+        <testsuite name="Application Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <env name="WP_ENV" value="testing"/>
+        <env name="DB_NAME" value="dlme_wp_test"/>
+        <env name="DB_USER" value="dlme_user"/>
+        <env name="DB_PASSWORD" value="test_password"/>
+        <env name="DB_HOST" value="db"/>
+    </php>
+</phpunit>

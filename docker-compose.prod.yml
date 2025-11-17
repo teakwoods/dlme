@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  wordpress:
+    image: ghcr.io/YOUR_GH_USERNAME/dlme:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WP_ENV: ${WP_ENV:-production}
+      WP_URL: ${WP_URL}
+    volumes:
+      - wp_app:/var/www/html
+    networks:
+      - wpnet
+
+  nginx:
+    image: nginx:1.27
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - wp_app:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - wpnet
+
+volumes:
+  wp_app:
+
+networks:
+  wpnet:
+    external: false

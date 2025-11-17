@@ -1,0 +1,8 @@
+# WordPress.org plugin slugs to install & activate via WP-CLI
+# Core marketplace plugins
+woocommerce
+dokan-lite
+
+# Security / login hardening (optional, can change)
+wordfence
+two-factor
