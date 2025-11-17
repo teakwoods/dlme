@@ -1,14 +1,18 @@
-# Handoff: Seller Availability Core Implementation
+# Handoff: DLme Marketplace Core Implementation
 
 **Date**: 2025-11-17
 **Branch**: `claude/summarize-wordpress-scaffold-01WS8BbnjZer8gAjv8UeRu57`
-**Commit**: `910826d`
+**Latest Commit**: `5e63803`
 
 ---
 
 ## Specification Summary
 
-Implemented the **Seller Availability** feature for the DLme marketplace, focusing exclusively on **framework-agnostic domain logic** as defined in the availability spec.
+Implemented **three main core subsystems** for the DLme marketplace, focusing exclusively on **framework-agnostic domain logic**:
+
+1. **Seller Availability** - Manual flags and schedules
+2. **CTA / Buy Button Decision Logic** - Context-aware button configuration
+3. **Checkout Sessions & Payment Plumbing** - Idempotent payment flow with post-payment hooks
 
 ### Scope: What I Built
 
@@ -419,6 +423,306 @@ Add framework-agnostic availability core with TDD approach:
 
 **Branch**: `claude/summarize-wordpress-scaffold-01WS8BbnjZer8gAjv8UeRu57`
 **Status**: Pushed to remote ✅
+
+---
+
+## Part 2: CTA Decision Logic & Checkout Sessions
+
+**Commit**: `5e63803`
+
+### What Was Implemented
+
+#### 1. CTA / Buy Button Core
+
+**Purpose**: Determines what call-to-action to show based on seller availability, product type, and page context.
+
+**Enums**:
+- `CtaType`: instant_checkout | contact_seller | message_seller | disabled
+- `ButtonVisualVariant`: primary | secondary | ghost | disabled
+- `PageType`: seller_landing | product_page
+
+**Value Objects**:
+```php
+ButtonConfig(label, variant, cssKey)  // Visual configuration
+CtaDecision(type, config, availabilityStatus, enabled)  // Decision result
+ProductContext(productId, isInstantConsult, sku, price)  // Product info
+ButtonClickContext(sellerId, productId, pageType, ...)  // Click capture
+WorkflowContext(workflowType, attributes)  // Branching support
+```
+
+**Services**:
+- `CallToActionService`:
+  - `decideForSellerLanding(sellerId)`: Returns INSTANT_CHECKOUT (available) or CONTACT_SELLER (offline)
+  - `decideForProduct(sellerId, product)`: Handles instant vs non-instant products
+
+**Styling**: `CtaStyleConfig` with Apple Store-style labels:
+- Landing available: "Talk to me now" (PRIMARY)
+- Landing offline: "Contact me" (SECONDARY)
+- Product available: "Buy Now" (PRIMARY)
+- Product offline: "Notify Me" (SECONDARY)
+- Non-instant: "Learn More" (DISABLED)
+
+**Configurable Policy**:
+- `CtaEnabledPolicy` interface for custom enable/disable logic
+- `DefaultCtaEnabledPolicy`: Enabled only for AVAILABLE_NOW + instant consult
+
+#### 2. Checkout Sessions & Payment Flow
+
+**Purpose**: Manages idempotent checkout sessions from button click through payment completion.
+
+**Enums**:
+- `CheckoutSessionStatus`: pending | succeeded | failed | expired
+
+**Value Objects**:
+```php
+CheckoutSession  // Full session state with idempotency key
+PaymentDetails   // Payment transaction details
+PaymentHandoffPayload  // Metadata for payment provider handoff
+```
+
+**Repository**: `CheckoutSessionRepository`
+```php
+save(session)
+findById(id)
+findByIdempotencyKey(key)
+findByExternalTransactionId(transactionId)
+markSucceededWithPayment(idempotencyKey, payment)
+markFailed(idempotencyKey, reason)
+```
+
+**Workflow Hook**: `PostPaymentWorkflow`
+```php
+onPaymentConfirmed(session, payment)  // Called on payment success
+```
+
+**Service**: `CheckoutService`
+
+```php
+// Create PENDING session (idempotent)
+startFromClick(ButtonClickContext, idempotencyKey, WorkflowContext): CheckoutSession
+
+// Build payment provider payload with metadata
+buildPaymentHandoffPayload(session): PaymentHandoffPayload
+
+// Mark payment successful (calls PostPaymentWorkflow)
+markPaymentSuccessful(idempotencyKey, payment): ?CheckoutSession
+
+// Mark payment failed (no resurrection)
+markPaymentFailed(idempotencyKey, reason): ?CheckoutSession
+
+// Validate payment amount vs quote
+paymentMatchesQuote(session, payment, tolerance): bool
+```
+
+**Idempotency Semantics**:
+- `startFromClick()`: Returns existing session if idempotency key exists (any state)
+- `markPaymentSuccessful()`: Transitions PENDING→SUCCEEDED once; repository prevents duplicates
+- PostPaymentWorkflow called on every `markPaymentSuccessful()` call (service responsibility)
+- Repository ensures state transitions happen exactly once
+
+**Payment Metadata**:
+Includes all context for reconciliation:
+- Required: `dlme_session_id`, `dlme_idempotency_key`, `dlme_seller_id`, `dlme_cta_type`, `dlme_page_type`, `dlme_availability_status`, `dlme_workflow_type`
+- Optional: `dlme_product_id`, `dlme_buyer_id`, `dlme_sku`, `dlme_referrer_url`, `dlme_correlation_id`
+- Workflow attributes: `dlme_workflow_<key>` for each WorkflowContext attribute
+
+**Session ID Format**: `sess_<uuidv4>` (e.g., `sess_a1b2c3d4-e5f6-7890-abcd-ef1234567890`)
+
+### File Structure (New Files)
+
+```
+src/wp-content/plugins/dlme-marketplace/src/Core/
+├── ButtonClickContext.php           # Click event capture
+├── ButtonConfig.php                 # Button visual config
+├── ButtonVisualVariant.php          # Enum: primary/secondary/ghost/disabled
+├── CallToActionService.php          # CTA decision service
+├── CheckoutService.php              # Checkout session service
+├── CheckoutSession.php              # Session value object
+├── CheckoutSessionRepository.php    # Persistence interface
+├── CheckoutSessionStatus.php        # Enum: pending/succeeded/failed/expired
+├── CtaDecision.php                  # CTA decision result
+├── CtaEnabledPolicy.php             # Interface: enabled policy
+├── CtaStyleConfig.php               # Button styling config
+├── CtaType.php                      # Enum: instant_checkout/contact_seller/etc
+├── DefaultCtaEnabledPolicy.php      # Default: AVAILABLE_NOW + instant only
+├── InMemoryCheckoutSessionRepository.php  # Test implementation
+├── PageType.php                     # Enum: seller_landing/product_page
+├── PaymentDetails.php               # Payment transaction details
+├── PaymentHandoffPayload.php        # Payment provider payload
+├── PostPaymentWorkflow.php          # Interface: post-payment hook
+├── ProductContext.php               # Product info value object
+└── WorkflowContext.php              # Workflow branching support
+
+tests/Core/
+├── CallToActionServiceTest.php      # 7 tests for CTA decisions
+└── CheckoutServiceTest.php          # 17 tests for checkout flow
+```
+
+### Test Coverage
+
+**Total**: 67 tests, 209 assertions, all passing ✅
+
+**CTA Tests** (7 tests):
+- ✓ Seller landing: available vs offline
+- ✓ Product page: instant vs non-instant
+- ✓ All combinations of availability + product type
+- ✓ Custom enabled policy injection
+
+**Checkout Tests** (17 tests):
+- ✓ Session creation with full context
+- ✓ Idempotency for startFromClick()
+- ✓ Metadata payload generation (all fields)
+- ✓ Payment success transitions (PENDING→SUCCEEDED)
+- ✓ PostPaymentWorkflow invocation
+- ✓ Duplicate payment success handling
+- ✓ Payment failure transitions
+- ✓ No resurrection of succeeded sessions
+- ✓ Payment amount validation
+- ✓ Null handling for optional fields
+
+**Previous Tests Still Passing**:
+- Availability: 19 tests
+- SellerSchedule: 10 tests
+- TimeRange: 14 tests
+
+### Integration Requirements
+
+The full-scope agent needs to:
+
+#### 1. Implement Repository
+
+Create `WpCheckoutSessionRepository`:
+```php
+class WpCheckoutSessionRepository implements CheckoutSessionRepository
+{
+    public function save(CheckoutSession $session): void
+    {
+        // Store in wp_postmeta or custom table
+        // Serialize session to JSON
+        // Index by: id, idempotencyKey, externalTransactionId
+    }
+
+    public function markSucceededWithPayment(
+        string $idempotencyKey,
+        PaymentDetails $payment
+    ): ?CheckoutSession {
+        // Atomic update: PENDING → SUCCEEDED (database transaction)
+        // Only transition once
+    }
+    // ...
+}
+```
+
+#### 2. Implement PostPaymentWorkflow
+
+Create post-payment hook:
+```php
+class InstantConsultWorkflow implements PostPaymentWorkflow
+{
+    public function onPaymentConfirmed(
+        CheckoutSession $session,
+        PaymentDetails $payment
+    ): void {
+        // Create WooCommerce order
+        // Send confirmation email
+        // Trigger video call provisioning
+        // Log analytics event
+        // etc.
+    }
+}
+```
+
+#### 3. Wire Up Payment Provider
+
+Stripe example:
+```php
+// On button click
+$click = ButtonClickContext::now(...);
+$workflow = new WorkflowContext('instant_call', ['priority' => 'high']);
+$session = $checkoutService->startFromClick($click, $idempotencyKey, $workflow);
+
+// Build payload
+$payload = $checkoutService->buildPaymentHandoffPayload($session);
+
+// Create Stripe Checkout Session
+$stripeSession = \Stripe\Checkout\Session::create([
+    'payment_intent_data' => [
+        'metadata' => $payload->metadata,  // Pass all context
+    ],
+    'line_items' => [...],
+    'mode' => 'payment',
+    'success_url' => '...',
+    'cancel_url' => '...',
+]);
+```
+
+#### 4. Handle Webhooks
+
+Process Stripe webhook:
+```php
+// Stripe sends payment_intent.succeeded
+$event = \Stripe\Webhook::constructEvent($payload, $sig, $secret);
+
+if ($event->type === 'payment_intent.succeeded') {
+    $metadata = $event->data->object->metadata;
+    $idempotencyKey = $metadata['dlme_idempotency_key'];
+
+    $payment = new PaymentDetails(
+        provider: 'stripe',
+        externalTransactionId: $event->data->object->id,
+        paymentInstrumentRef: $event->data->object->payment_method,
+        currency: $event->data->object->currency,
+        amount: $event->data->object->amount / 100,
+        paidAt: new DateTimeImmutable('@' . $event->created)
+    );
+
+    // This will call PostPaymentWorkflow::onPaymentConfirmed()
+    $checkoutService->markPaymentSuccessful($idempotencyKey, $payment);
+}
+```
+
+#### 5. Render CTA Buttons
+
+Product page example:
+```php
+$decision = $ctaService->decideForProduct($sellerId, $productContext);
+
+echo '<button
+    class="' . esc_attr($decision->config->cssKey) . '"
+    data-seller-id="' . esc_attr($sellerId) . '"
+    data-product-id="' . esc_attr($productId) . '"
+    ' . ($decision->enabled ? '' : 'disabled') . '>
+    ' . esc_html($decision->config->label) . '
+</button>';
+```
+
+#### 6. REST API Endpoints
+
+Suggested endpoints:
+- `POST /wp-json/dlme/v1/cta/decide-landing/{sellerId}` - Get CTA for landing
+- `POST /wp-json/dlme/v1/cta/decide-product/{sellerId}` - Get CTA for product
+- `POST /wp-json/dlme/v1/checkout/start` - Create checkout session
+- `POST /wp-json/dlme/v1/checkout/{sessionId}/payment-succeeded` - Mark success
+- `POST /wp-json/dlme/v1/checkout/{sessionId}/payment-failed` - Mark failed
+
+---
+
+## Summary of All Commits
+
+**Commit 1** (`910826d`): Seller Availability Core
+- 43 tests, 97 assertions
+- Availability service, schedules, timezones
+
+**Commit 2** (`5e63803`): CTA & Checkout Sessions
+- 24 new tests (67 total), 209 assertions
+- CTA decision logic with configurable policies
+- Idempotent checkout sessions with payment flow
+
+**Total Implementation**:
+- 32 Core classes
+- 67 comprehensive tests
+- Zero WordPress dependencies
+- Full PSR-12 + PHPStan level 6 compliance
 
 ---
 
