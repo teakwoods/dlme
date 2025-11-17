@@ -1,0 +1,484 @@
+*, ::before, ::after {
+    --tw-border-spacing-x: 0;
+    --tw-border-spacing-y: 0;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-rotate: 0;
+    --tw-skew-x: 0;
+    --tw-skew-y: 0;
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+    --tw-pan-x:  ;
+    --tw-pan-y:  ;
+    --tw-pinch-zoom:  ;
+    --tw-scroll-snap-strictness: proximity;
+    --tw-gradient-from-position:  ;
+    --tw-gradient-via-position:  ;
+    --tw-gradient-to-position:  ;
+    --tw-ordinal:  ;
+    --tw-slashed-zero:  ;
+    --tw-numeric-figure:  ;
+    --tw-numeric-spacing:  ;
+    --tw-numeric-fraction:  ;
+    --tw-ring-inset:  ;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-color: rgb(59 130 246 / 0.5);
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-colored: 0 0 #0000;
+    --tw-blur:  ;
+    --tw-brightness:  ;
+    --tw-contrast:  ;
+    --tw-grayscale:  ;
+    --tw-hue-rotate:  ;
+    --tw-invert:  ;
+    --tw-saturate:  ;
+    --tw-sepia:  ;
+    --tw-drop-shadow:  ;
+    --tw-backdrop-blur:  ;
+    --tw-backdrop-brightness:  ;
+    --tw-backdrop-contrast:  ;
+    --tw-backdrop-grayscale:  ;
+    --tw-backdrop-hue-rotate:  ;
+    --tw-backdrop-invert:  ;
+    --tw-backdrop-opacity:  ;
+    --tw-backdrop-saturate:  ;
+    --tw-backdrop-sepia:  ;
+    --tw-contain-size:  ;
+    --tw-contain-layout:  ;
+    --tw-contain-paint:  ;
+    --tw-contain-style:  
+}
+::backdrop {
+    --tw-border-spacing-x: 0;
+    --tw-border-spacing-y: 0;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-rotate: 0;
+    --tw-skew-x: 0;
+    --tw-skew-y: 0;
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+    --tw-pan-x:  ;
+    --tw-pan-y:  ;
+    --tw-pinch-zoom:  ;
+    --tw-scroll-snap-strictness: proximity;
+    --tw-gradient-from-position:  ;
+    --tw-gradient-via-position:  ;
+    --tw-gradient-to-position:  ;
+    --tw-ordinal:  ;
+    --tw-slashed-zero:  ;
+    --tw-numeric-figure:  ;
+    --tw-numeric-spacing:  ;
+    --tw-numeric-fraction:  ;
+    --tw-ring-inset:  ;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-color: rgb(59 130 246 / 0.5);
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-colored: 0 0 #0000;
+    --tw-blur:  ;
+    --tw-brightness:  ;
+    --tw-contrast:  ;
+    --tw-grayscale:  ;
+    --tw-hue-rotate:  ;
+    --tw-invert:  ;
+    --tw-saturate:  ;
+    --tw-sepia:  ;
+    --tw-drop-shadow:  ;
+    --tw-backdrop-blur:  ;
+    --tw-backdrop-brightness:  ;
+    --tw-backdrop-contrast:  ;
+    --tw-backdrop-grayscale:  ;
+    --tw-backdrop-hue-rotate:  ;
+    --tw-backdrop-invert:  ;
+    --tw-backdrop-opacity:  ;
+    --tw-backdrop-saturate:  ;
+    --tw-backdrop-sepia:  ;
+    --tw-contain-size:  ;
+    --tw-contain-layout:  ;
+    --tw-contain-paint:  ;
+    --tw-contain-style:  
+}
+.dokan-category-commission .fixed {
+    position: fixed
+}
+.dokan-category-commission .relative {
+    position: relative
+}
+.dokan-category-commission .\!m-0 {
+    margin: 0px !important
+}
+.dokan-category-commission .mr-20 {
+    margin-left: 5rem
+}
+.dokan-category-commission .box-border {
+    box-sizing: border-box
+}
+.dokan-category-commission .block {
+    display: block
+}
+.dokan-category-commission .flex {
+    display: flex
+}
+.dokan-category-commission .hidden {
+    display: none
+}
+.dokan-category-commission .h-1\/2 {
+    height: 50%
+}
+.dokan-category-commission .h-\[32px\] {
+    height: 32px
+}
+.dokan-category-commission .h-\[3rem\] {
+    height: 3rem
+}
+.dokan-category-commission .h-full {
+    height: 100%
+}
+.dokan-category-commission .max-h-\[500px\] {
+    max-height: 500px
+}
+.dokan-category-commission .\!min-h-full {
+    min-height: 100% !important
+}
+.dokan-category-commission .min-h-\[3rem\] {
+    min-height: 3rem
+}
+.dokan-category-commission .\!w-\[100\%\] {
+    width: 100% !important
+}
+.dokan-category-commission .w-1\/2 {
+    width: 50%
+}
+.dokan-category-commission .w-\[110px\] {
+    width: 110px
+}
+.dokan-category-commission .w-\[1px\] {
+    width: 1px
+}
+.dokan-category-commission .min-w-\[75px\] {
+    min-width: 75px
+}
+.dokan-category-commission .cursor-pointer {
+    cursor: pointer
+}
+.dokan-category-commission .flex-row {
+    flex-direction: row
+}
+.dokan-category-commission .flex-col {
+    flex-direction: column
+}
+.dokan-category-commission .items-center {
+    align-items: center
+}
+.dokan-category-commission .justify-start {
+    justify-content: flex-start
+}
+.dokan-category-commission .justify-center {
+    justify-content: center
+}
+.dokan-category-commission .overflow-y-auto {
+    overflow-y: auto
+}
+.dokan-category-commission .rounded-\[5px\] {
+    border-radius: 5px
+}
+.dokan-category-commission .\!border-0 {
+    border-width: 0px !important
+}
+.dokan-category-commission .border {
+    border-width: 1px
+}
+.dokan-category-commission .border-0 {
+    border-width: 0px
+}
+.dokan-category-commission .border-\[0\.957434px\] {
+    border-width: 0.957434px
+}
+.dokan-category-commission .border-\[1px\] {
+    border-width: 1px
+}
+.dokan-category-commission .\!border-b-\[1px\] {
+    border-bottom-width: 1px !important
+}
+.dokan-category-commission .\!border-r-\[1px\] {
+    border-left-width: 1px !important
+}
+.dokan-category-commission .border-b-0 {
+    border-bottom-width: 0px
+}
+.dokan-category-commission .border-b-\[1px\] {
+    border-bottom-width: 1px
+}
+.dokan-category-commission .border-l-\[1px\] {
+    border-right-width: 1px
+}
+.dokan-category-commission .border-r-\[0\.957434px\] {
+    border-left-width: 0.957434px
+}
+.dokan-category-commission .border-solid {
+    border-style: solid
+}
+.dokan-category-commission .\!border-none {
+    border-style: none !important
+}
+.dokan-category-commission .border-none {
+    border-style: none
+}
+.dokan-category-commission .border-\[\#E9E9E9\] {
+    --tw-border-opacity: 1;
+    border-color: rgb(233 233 233 / var(--tw-border-opacity, 1))
+}
+.dokan-category-commission .border-\[\#e9e9ea\] {
+    --tw-border-opacity: 1;
+    border-color: rgb(233 233 234 / var(--tw-border-opacity, 1))
+}
+.dokan-category-commission .bg-gray-100 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+}
+.dokan-category-commission .bg-transparent {
+    background-color: transparent
+}
+.dokan-category-commission .\!p-0 {
+    padding: 0px !important
+}
+.dokan-category-commission .p-1 {
+    padding: 0.25rem
+}
+.dokan-category-commission .\!pb-0 {
+    padding-bottom: 0px !important
+}
+.dokan-category-commission .\!pl-2 {
+    padding-right: 0.5rem !important
+}
+.dokan-category-commission .\!pl-\[5px\] {
+    padding-right: 5px !important
+}
+.dokan-category-commission .\!pr-0 {
+    padding-left: 0px !important
+}
+.dokan-category-commission .\!pt-0 {
+    padding-top: 0px !important
+}
+.dokan-category-commission .pl-3 {
+    padding-right: 0.75rem
+}
+.dokan-category-commission .pl-\[5px\] {
+    padding-right: 5px
+}
+.dokan-category-commission .text-center {
+    text-align: center
+}
+.dokan-category-commission .text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem
+}
+.dokan-category-commission .text-\[\#4C19E6\] {
+    --tw-text-opacity: 1;
+    color: rgb(76 25 230 / var(--tw-text-opacity, 1))
+}
+.dokan-category-commission .text-\[\#7047EB\] {
+    --tw-text-opacity: 1;
+    color: rgb(112 71 235 / var(--tw-text-opacity, 1))
+}
+.dokan-category-commission .text-black {
+    --tw-text-opacity: 1;
+    color: rgb(0 0 0 / var(--tw-text-opacity, 1))
+}
+.dokan-category-commission .text-gray-300 {
+    --tw-text-opacity: 1;
+    color: rgb(209 213 219 / var(--tw-text-opacity, 1))
+}
+.dokan-category-commission .text-gray-500 {
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+}
+.dokan-category-commission .filter {
+    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
+}
+.dokan-category-commission .last\:border-b-0:last-child {
+    border-bottom-width: 0px
+}
+.dokan-category-commission .focus\:border-transparent:focus {
+    border-color: transparent
+}
+.dokan-category-commission .focus\:\!shadow-none:focus {
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important
+}
+.dokan-category-commission .disabled\:cursor-not-allowed:disabled {
+    cursor: not-allowed
+}
+@media (min-width: 360px) {
+    .dokan-category-commission .d-xs\:ml-1 {
+        margin-right: 0.25rem
+    }
+    .dokan-category-commission .d-xs\:flex {
+        display: flex
+    }
+    .dokan-category-commission .d-xs\:hidden {
+        display: none
+    }
+    .dokan-category-commission .d-xs\:w-fit {
+        width: -moz-fit-content;
+        width: fit-content
+    }
+    .dokan-category-commission .d-xs\:\!rounded-l-none {
+        border-top-right-radius: 0px !important;
+        border-bottom-right-radius: 0px !important
+    }
+    .dokan-category-commission .d-xs\:\!rounded-r-none {
+        border-top-left-radius: 0px !important;
+        border-bottom-left-radius: 0px !important
+    }
+    .dokan-category-commission .d-xs\:border-\[0\.957434px\] {
+        border-width: 0.957434px
+    }
+    .dokan-category-commission .d-xs\:\!border-l-0 {
+        border-right-width: 0px !important
+    }
+    .dokan-category-commission .d-xs\:\!border-r-0 {
+        border-left-width: 0px !important
+    }
+    .dokan-category-commission .d-xs\:border-l-0 {
+        border-right-width: 0px
+    }
+    .dokan-category-commission .d-xs\:border-r-0 {
+        border-left-width: 0px
+    }
+    .dokan-category-commission .d-xs\:\!bg-transparent {
+        background-color: transparent !important
+    }
+    .dokan-category-commission .d-xs\:bg-\[\#e5e7eb\] {
+        --tw-bg-opacity: 1;
+        background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+    }
+    .dokan-category-commission .d-xs\:bg-gray-100 {
+        --tw-bg-opacity: 1;
+        background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+    }
+    .dokan-category-commission .d-xs\:p-1 {
+        padding: 0.25rem
+    }
+    .dokan-category-commission .d-xs\:\!pl-0 {
+        padding-right: 0px !important
+    }
+    .dokan-category-commission .d-xs\:\!pr-\[5px\] {
+        padding-left: 5px !important
+    }
+    .dokan-category-commission .d-xs\:pl-1 {
+        padding-right: 0.25rem
+    }
+    .dokan-category-commission .d-xs\:pr-1 {
+        padding-left: 0.25rem
+    }
+    .dokan-category-commission .d-xs\:text-right {
+        text-align: left
+    }
+    .dokan-category-commission .d-xs\:text-\[6px\] {
+        font-size: 6px
+    }
+    .dokan-category-commission .d-xs\:text-\[8px\] {
+        font-size: 8px
+    }
+    .dokan-category-commission .d-xs\:shadow-md {
+        --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+        box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+    }
+}
+@media (min-width: 640px) {
+    .dokan-category-commission .sm\:w-fit {
+        width: -moz-fit-content;
+        width: fit-content
+    }
+    .dokan-category-commission .sm\:text-\[12px\] {
+        font-size: 12px
+    }
+    .dokan-category-commission .sm\:text-\[14px\] {
+        font-size: 14px
+    }
+}
+@media (min-width: 768px) {
+    .dokan-category-commission .md\:flex {
+        display: flex
+    }
+    .dokan-category-commission .md\:w-auto {
+        width: auto
+    }
+    .dokan-category-commission .md\:\!rounded-l-\[5px\] {
+        border-top-right-radius: 5px !important;
+        border-bottom-right-radius: 5px !important
+    }
+    .dokan-category-commission .md\:\!rounded-r-\[5px\] {
+        border-top-left-radius: 5px !important;
+        border-bottom-left-radius: 5px !important
+    }
+    .dokan-category-commission .md\:border-0 {
+        border-width: 0px
+    }
+    .dokan-category-commission .md\:\!border-l-\[0\.957434px\] {
+        border-right-width: 0.957434px !important
+    }
+    .dokan-category-commission .md\:\!border-r-\[0\.957434px\] {
+        border-left-width: 0.957434px !important
+    }
+    .dokan-category-commission .md\:\!border-r-\[1px\] {
+        border-left-width: 1px !important
+    }
+    .dokan-category-commission .md\:border-l-\[0\.957434px\] {
+        border-right-width: 0.957434px
+    }
+    .dokan-category-commission .md\:border-l-\[1px\] {
+        border-right-width: 1px
+    }
+    .dokan-category-commission .md\:border-r-\[0\.957434px\] {
+        border-left-width: 0.957434px
+    }
+    .dokan-category-commission .md\:\!bg-gray-100 {
+        --tw-bg-opacity: 1 !important;
+        background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1)) !important
+    }
+    .dokan-category-commission .md\:bg-transparent {
+        background-color: transparent
+    }
+    .dokan-category-commission .md\:p-2 {
+        padding: 0.5rem
+    }
+    .dokan-category-commission .md\:\!pl-\[5px\] {
+        padding-right: 5px !important
+    }
+    .dokan-category-commission .md\:pl-2 {
+        padding-right: 0.5rem
+    }
+    .dokan-category-commission .md\:pl-4 {
+        padding-right: 1rem
+    }
+    .dokan-category-commission .md\:pl-6 {
+        padding-right: 1.5rem
+    }
+    .dokan-category-commission .md\:pr-2 {
+        padding-left: 0.5rem
+    }
+    .dokan-category-commission .md\:text-left {
+        text-align: right
+    }
+    .dokan-category-commission .md\:shadow-md {
+        --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+        box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+    }
+    .dokan-category-commission .md\:shadow-none {
+        --tw-shadow: 0 0 #0000;
+        --tw-shadow-colored: 0 0 #0000;
+        box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+    }
+}
+

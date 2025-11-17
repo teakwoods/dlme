@@ -1,0 +1,17 @@
+/* @license
+Papa Parse
+v5.5.3
+https://github.com/mholt/PapaParse
+License: MIT
+*/
+
+/*!
+  * chartjs-adapter-moment v1.0.1
+  * https://www.chartjs.org
+  * (c) 2022 chartjs-adapter-moment Contributors
+  * Released under the MIT license
+  */
+
+//! moment.js
+
+//! moment.js locale configuration

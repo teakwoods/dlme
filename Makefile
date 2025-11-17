@@ -85,7 +85,7 @@ dev-wp-core-install:
 .PHONY: dev-wp-plugins
 dev-wp-plugins:
 	@echo "Installing WordPress.org plugins from manifest (dev)..."
-	docker compose --profile dev run --rm wpcli bash -lc "scripts/install-wporg-plugins.sh"
+	docker compose --profile dev run --rm --entrypoint bash wpcli -lc "scripts/install-wporg-plugins.sh"
 
 	@echo "Checking for WooCommerce Bookings zip..."
 	@if [ -f "src/wp-content/plugins-zips/woocommerce-bookings.zip" ]; then \
