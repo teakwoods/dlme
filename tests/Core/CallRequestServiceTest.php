@@ -7,12 +7,14 @@ namespace Tests\Core;
 use DateTimeImmutable;
 use DLme\Core\ArrayLogger;
 use DLme\Core\AvailabilityStatus;
+use DLme\Core\CallRequest;
 use DLme\Core\CallRequestService;
 use DLme\Core\CallRequestStatus;
 use DLme\Core\CheckoutSession;
 use DLme\Core\CheckoutSessionStatus;
 use DLme\Core\ConsultantPresence;
 use DLme\Core\CtaType;
+use DLme\Core\DomainException;
 use DLme\Core\InMemoryCallRequestRepository;
 use DLme\Core\InMemoryConsultantPresenceRepository;
 use DLme\Core\InMemoryProductMetadataProvider;
@@ -294,6 +296,91 @@ describe('CallRequestService - reschedule', function () {
         $this->service->reschedule($original->id, delayMinutes: 10);
 
         expect($this->logger->hasRecord('info', 'dlme.call_request.rescheduled'))->toBeTrue();
+    });
+
+    test('rejects non-positive delay minutes', function () {
+        $session = new CheckoutSession(
+            id: 'sess_xyz789',
+            idempotencyKey: 'idem-key',
+            sellerId: 123,
+            buyerId: 456,
+            productId: 789,
+            sku: 'PROD-001',
+            quotedPrice: 50.00,
+            pageType: PageType::PRODUCT_PAGE,
+            ctaType: CtaType::INSTANT_CHECKOUT,
+            availabilityStatus: AvailabilityStatus::AVAILABLE_NOW,
+            referrerUrl: null,
+            correlationId: 'corr-123',
+            workflowContext: new WorkflowContext('instant_call', []),
+            createdAt: new DateTimeImmutable(),
+            status: CheckoutSessionStatus::SUCCEEDED,
+            buyerPhone: '+1234567890',
+            buyerEmail: null
+        );
+
+        $original = $this->service->createFromCheckoutSession($session);
+
+        expect(fn() => $this->service->reschedule($original->id, delayMinutes: 0))
+            ->toThrow(DomainException::class);
+    });
+
+    test('rejects reschedule when original request already terminal', function () {
+        $session = new CheckoutSession(
+            id: 'sess_xyz789',
+            idempotencyKey: 'idem-key',
+            sellerId: 123,
+            buyerId: 456,
+            productId: 789,
+            sku: 'PROD-001',
+            quotedPrice: 50.00,
+            pageType: PageType::PRODUCT_PAGE,
+            ctaType: CtaType::INSTANT_CHECKOUT,
+            availabilityStatus: AvailabilityStatus::AVAILABLE_NOW,
+            referrerUrl: null,
+            correlationId: 'corr-123',
+            workflowContext: new WorkflowContext('instant_call', []),
+            createdAt: new DateTimeImmutable(),
+            status: CheckoutSessionStatus::SUCCEEDED,
+            buyerPhone: '+1234567890',
+            buyerEmail: null
+        );
+
+        $original = $this->service->createFromCheckoutSession($session);
+
+        $completed = new CallRequest(
+            id: $original->id,
+            checkoutSessionId: $original->checkoutSessionId,
+            sellerId: $original->sellerId,
+            buyerId: $original->buyerId,
+            buyerPhone: $original->buyerPhone,
+            buyerEmail: $original->buyerEmail,
+            productId: $original->productId,
+            sku: $original->sku,
+            pricingModel: $original->pricingModel,
+            agreedPrice: $original->agreedPrice,
+            currency: $original->currency,
+            prepaidMinutes: $original->prepaidMinutes,
+            createdAt: $original->createdAt,
+            initiationWindowStart: $original->initiationWindowStart,
+            initiationWindowEnd: $original->initiationWindowEnd,
+            callDurationMinutes: $original->callDurationMinutes,
+            scheduledExecutionTime: $original->scheduledExecutionTime,
+            status: CallRequestStatus::COMPLETED,
+            actualCallStartTime: new DateTimeImmutable(),
+            actualCallEndTime: new DateTimeImmutable(),
+            actualCallDurationMinutes: 10,
+            callCompletedSuccessfully: true,
+            correlationId: $original->correlationId,
+            referrerUrl: $original->referrerUrl,
+            supersededByRequestId: null,
+            supersededRequestId: null
+        );
+
+        $this->repository->save($completed);
+
+        expect(fn() => $this->service->reschedule($original->id, delayMinutes: 5))
+            ->toThrow(DomainException::class);
     });
 });
 

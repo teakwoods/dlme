@@ -113,6 +113,30 @@ describe('CheckoutService - startFromClick', function () {
         expect($session2->id)->toBe($session->id);
         expect($session2->status)->toBe(CheckoutSessionStatus::SUCCEEDED);
     });
+
+    test('captures buyer contact information when provided', function () {
+        $click = ButtonClickContext::now(
+            sellerId: 123,
+            productId: 456,
+            pageType: PageType::PRODUCT_PAGE,
+            availabilityStatus: AvailabilityStatus::AVAILABLE_NOW,
+            ctaType: CtaType::INSTANT_CHECKOUT,
+            sku: 'PROD-001',
+            price: 99.99,
+            referrerUrl: 'https://example.com',
+            buyerId: 789,
+            correlationId: 'corr-123',
+            buyerPhone: '+15551234567',
+            buyerEmail: 'buyer@example.com'
+        );
+
+        $workflow = new WorkflowContext('instant_call', []);
+
+        $session = $this->service->startFromClick($click, 'idem-key-contact', $workflow);
+
+        expect($session->buyerPhone)->toBe('+15551234567');
+        expect($session->buyerEmail)->toBe('buyer@example.com');
+    });
 });
 
 describe('CheckoutService - buildPaymentHandoffPayload', function () {

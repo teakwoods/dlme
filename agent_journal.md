@@ -543,3 +543,45 @@ These are explicitly NOT implemented in this phase:
 **Implementation Start**: 2025-01-19
 **Assigned Agent**: SANDBOX (Pure Domain, Framework-Agnostic)
 **Approach**: Test-Driven Development (Red → Green → Refactor)
+
+---
+
+## 2025-01-19 — Code Review Follow-Up & Fixes
+
+### New Discoveries
+
+1. **Plugin not wired into WordPress/WooCommerce hooks**  
+   - `dlme-marketplace.php` only autoloads Composer; no `add_action`/`add_filter` calls exist.  
+   - None of the core services register with WooCommerce checkout/payment hooks, so integration paths are still theoretical.
+
+2. **Call execution scheduling gaps**  
+   - `CallExecutionService::canExecuteNow()` ignored `initiationWindowStart`, `scheduledExecutionTime`, and consultant presence.  
+   - Result: rescheduled requests could execute immediately and consultants could receive overlapping calls.  
+   - Added coverage in `tests/Core/CallExecutionServiceTest.php`.
+
+3. **Reschedule validation missing**  
+   - `CallRequestService::reschedule()` allowed any status (including COMPLETED/EXPIRED) and non-positive delays.  
+   - Introduced `DomainException` guards and regression tests in `tests/Core/CallRequestServiceTest.php`.
+
+4. **Buyer contact data never persisted**  
+   - `ButtonClickContext` / `CheckoutService` never captured buyer phone/email, leaving execution payloads with blank numbers.  
+   - Added optional contact fields to click context, propagated through checkout sessions and into call requests.
+
+5. **Test execution blocked**  
+   - `make test` and `composer test` currently fail locally because Composer/PHP binaries are missing both on host and inside Docker image (`composer: not found`).  
+   - Documented inability to run automated tests; manual verification pending environment fix.
+
+### Fixes Implemented
+
+- Extended `ButtonClickContext::now()` and `CheckoutService::startFromClick()` to store buyer phone/email so `CallRequestService` passes real numbers to execution payloads.
+- Strengthened `CallExecutionService::canExecuteNow()` to enforce scheduled windows and idle presence before allowing execution.
+- Added validation to `CallRequestService::reschedule()` to require pending/scheduled status and positive delay, raising `DomainException` otherwise.
+- Introduced new Pest suites:
+  - `tests/Core/CallExecutionServiceTest.php` for scheduling/presence behavior.
+  - Additional cases in `tests/Core/CheckoutServiceTest.php` and `tests/Core/CallRequestServiceTest.php` for contact persistence and reschedule guards.
+
+### Outstanding Work
+
+- Implement real WordPress/Dokan/WooCommerce hooks (bootstrap layer) so services can be integration-tested.
+- Replace in-memory repositories with `$wpdb`/WooCommerce backed implementations for persistence.
+- Provision PHP + Composer binaries (host or Docker) to restore `make test`/`composer test` capabilities.

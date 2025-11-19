@@ -47,7 +47,22 @@ final class CallExecutionService
 
         $now = new \DateTimeImmutable();
 
+        if ($now < $request->initiationWindowStart) {
+            return false;
+        }
+
+        if ($request->scheduledExecutionTime !== null
+            && $now < $request->scheduledExecutionTime) {
+            return false;
+        }
+
         if ($now > $request->initiationWindowEnd) {
+            return false;
+        }
+
+        $presence = $this->presenceRepository->getPresence($request->sellerId);
+
+        if ($presence !== null && $presence->status !== 'idle') {
             return false;
         }
 

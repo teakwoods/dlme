@@ -24,6 +24,8 @@ final class ButtonClickContext
         public readonly ?int $buyerId,
         public readonly ?string $correlationId,
         public readonly DateTimeInterface $clickedAt,
+        public readonly ?string $buyerPhone = null,
+        public readonly ?string $buyerEmail = null,
     ) {
     }
 
@@ -40,7 +42,9 @@ final class ButtonClickContext
         ?float $price,
         ?string $referrerUrl,
         ?int $buyerId,
-        ?string $correlationId
+        ?string $correlationId,
+        ?string $buyerPhone = null,
+        ?string $buyerEmail = null
     ): self {
         return new self(
             $sellerId,
@@ -53,7 +57,9 @@ final class ButtonClickContext
             $referrerUrl,
             $buyerId,
             $correlationId,
-            new DateTimeImmutable()
+            new DateTimeImmutable(),
+            $buyerPhone,
+            $buyerEmail
         );
     }
 }

@@ -61,7 +61,9 @@ final class CheckoutService
             correlationId: $click->correlationId,
             workflowContext: $workflowContext,
             createdAt: $click->clickedAt,
-            status: CheckoutSessionStatus::PENDING
+            status: CheckoutSessionStatus::PENDING,
+            buyerPhone: $click->buyerPhone,
+            buyerEmail: $click->buyerEmail
         );
 
         $this->sessionRepository->save($session);

@@ -1066,6 +1066,30 @@ All services emit structured PSR-3 logs:
 - `dlme.call_completion.request_not_found` (error)
 - `dlme.call_completion.processed` (info)
 
+### 2025-01-19 Review Notes
+
+**Findings**
+- Plugin bootstrap (`src/wp-content/plugins/dlme-marketplace/dlme-marketplace.php`) still just autoloads Composer; no `add_action`/`add_filter` calls exist, so core services never run inside WordPress/WooCommerce yet.
+- `CallExecutionService::canExecuteNow()` ignored `initiationWindowStart`, `scheduledExecutionTime`, and consultant presence—allowing rescheduled calls to fire immediately and collide with active sessions.
+- `CallRequestService::reschedule()` allowed zero/negative delay minutes and accepted COMPLETED/EXPIRED requests, spawning duplicate contracts.
+- Buyer contact metadata (phone/email) never flowed from button clicks to checkout sessions or call requests, leaving execution payloads without a client phone number.
+
+**Fixes Applied (current branch)**
+- Extended `ButtonClickContext::now()` and `CheckoutService::startFromClick()` to accept buyer phone/email so `CallRequestService` and `CallExecutionService::buildExecutionPayload()` carry real contact data.
+- Tightened `CallExecutionService::canExecuteNow()` to require the current time to be >= `initiationWindowStart`, obey `scheduledExecutionTime`, and ensure consultant presence is either missing or explicitly `idle`.
+- Added new guards to `CallRequestService::reschedule()` (throws `DomainException`) when delay <= 0 or original status is not `PENDING`/`SCHEDULED`.
+- Added regression coverage:
+  - `tests/Core/CallExecutionServiceTest.php` (new file).
+  - New scenarios in `tests/Core/CheckoutServiceTest.php` and `tests/Core/CallRequestServiceTest.php`.
+
+**Testing Status**
+- Could not run `make test` / `composer test`; Composer/PHP binaries are missing in the current host + Docker image (`composer: not found`). Re-run once tooling is available.
+
+**Next Steps for Full Integration**
+- Implement a hook/DI bootstrap that registers these services with WordPress and WooCommerce (e.g., `woocommerce_payment_complete`, Dokan vendor panels, REST routes).
+- Replace in-memory repositories with `$wpdb`/WooCommerce backed implementations and run the described migrations.
+- Provision PHP + Composer so lint/analysis/test targets in the Makefile can execute.
+
 ### Design Decisions
 
 1. **CallRequest = Frozen Contract**: Immutable snapshot of pricing/timing at purchase

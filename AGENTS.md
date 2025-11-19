@@ -1,9 +1,5 @@
-# AGENTS.MD – DLme Coding Agent Guidelines
 
-> This document is for a **frontier LLM coding agent** collaborating with a human developer on the **DLme** marketplace project.
->
-> You are working in an environment **with Docker, Composer, Node, and Playwright available**, but CI may not yet be fully wired up.  
-> Your priorities are: **TDD, safety, correctness, and maintainability.**
+# Your priorities are: **TDD, safety, correctness, and maintainability.**
 
 ---
 

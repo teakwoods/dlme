@@ -120,10 +120,24 @@ final class CallRequestService
         int $delayMinutes,
         ?int $postSessionBufferMinutes = null
     ): CallRequest {
+        if ($delayMinutes <= 0) {
+            throw new DomainException('Delay minutes must be greater than zero.');
+        }
+
         $original = $this->repository->findById($originalRequestId);
 
         if ($original === null) {
             throw new \RuntimeException("CallRequest not found: {$originalRequestId}");
+        }
+
+        if ($original->status !== CallRequestStatus::PENDING
+            && $original->status !== CallRequestStatus::SCHEDULED) {
+            throw new DomainException(
+                sprintf(
+                    'Cannot reschedule request in %s status.',
+                    $original->status->value
+                )
+            );
         }
 
         $now = new DateTimeImmutable();
