@@ -8,6 +8,9 @@ use DateTimeInterface;
 
 /**
  * Represents a checkout session with idempotency support.
+ *
+ * @property-read string|null $buyerPhone Buyer contact phone number
+ * @property-read string|null $buyerEmail Buyer contact email address
  */
 final class CheckoutSession
 {
@@ -30,6 +33,8 @@ final class CheckoutSession
         public readonly ?string $externalTransactionId = null,
         public readonly ?DateTimeInterface $completedAt = null,
         public readonly ?string $failureReason = null,
+        public readonly ?string $buyerPhone = null,
+        public readonly ?string $buyerEmail = null,
     ) {
     }
 }

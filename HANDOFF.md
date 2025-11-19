@@ -1,18 +1,19 @@
 # Handoff: DLme Marketplace Core Implementation
 
-**Date**: 2025-11-17
+**Date**: 2025-01-19
 **Branch**: `claude/summarize-wordpress-scaffold-01WS8BbnjZer8gAjv8UeRu57`
-**Latest Commit**: `5e63803`
+**Latest Commit**: (to be updated)
 
 ---
 
 ## Specification Summary
 
-Implemented **three main core subsystems** for the DLme marketplace, focusing exclusively on **framework-agnostic domain logic**:
+Implemented **four main core subsystems** for the DLme marketplace, focusing exclusively on **framework-agnostic domain logic**:
 
 1. **Seller Availability** - Manual flags and schedules
 2. **CTA / Buy Button Decision Logic** - Context-aware button configuration
 3. **Checkout Sessions & Payment Plumbing** - Idempotent payment flow with post-payment hooks
+4. **Call Request & Scheduling** - Post-purchase call management, presence tracking, callback scheduling
 
 ### Scope: What I Built
 
@@ -773,3 +774,324 @@ Suggested endpoints:
 ---
 
 **End of Handoff**
+
+---
+
+## Part 3: Call Request Subsystem (Latest Addition)
+
+**Commit**: (pending)
+**Tests**: 47 new tests (126 total), 457 assertions
+**Purpose**: Post-purchase call scheduling, presence tracking, and callback management
+
+### Overview
+
+The CallRequest subsystem handles the post-payment workflow for connecting clients with consultants:
+- Creates CallRequest entity from successful CheckoutSession
+- Tracks consultant real-time presence from external call system
+- Supports rescheduling (consultant "capture for later")
+- Builds execution payloads for Asterisk/FastAGI
+- Processes completion webhooks for PAYG billing
+
+### Key Concepts
+
+**CallRequest**: Frozen snapshot of consultation contract
+- Links to CheckoutSession (payment)
+- Pricing model (PAYG vs prepaid)
+- Timing constraints (initiation window, call duration)
+- Execution tracking (scheduled time, actual metrics)
+- Rescheduling relationship (superseding chain)
+
+**Consultant Presence**: Real-time availability from external system
+- Status: 'idle', 'in_call', 'offline'
+- Received via webhook, stored per-consultant
+- Used to validate call execution readiness
+
+**Rescheduling**: "Capture for later" creates new CallRequest
+- Original marked as SUPERSEDED
+- New request links back to same CheckoutSession
+- Supports fixed delays (5/10/20 min) or "after current session"
+
+### File Structure
+
+```
+src/wp-content/plugins/dlme-marketplace/src/Core/
+# Enums
+├── CallRequestStatus.php           # pending, scheduled, in_progress, completed, superseded, expired, failed
+├── PricingModel.php                 # payg, prepaid
+
+# Value Objects
+├── ConsultantPresence.php           # Real-time presence snapshot
+├── CallRequest.php                  # Call contract entity
+├── CallExecutionPayload.php         # Payload for Asterisk
+├── CallCompletionEvent.php          # Completion webhook from Asterisk
+
+# Interfaces
+├── ProductMetadataProvider.php      # Product config (pricing, timing)
+├── CallRequestRepository.php        # CallRequest persistence
+├── ConsultantPresenceRepository.php # Presence storage
+
+# Services
+├── ConsultantPresenceService.php    # Presence webhook handling
+├── CallRequestService.php           # Create, reschedule, expire requests
+├── CallExecutionService.php         # Build payloads, validate execution
+├── CallCompletionService.php        # Handle completion webhooks
+
+# In-Memory Test Implementations
+├── InMemoryProductMetadataProvider.php
+├── InMemoryCallRequestRepository.php
+└── InMemoryConsultantPresenceRepository.php
+
+tests/Core/
+├── CallRequestStatusTest.php
+├── PricingModelTest.php
+├── ConsultantPresenceTest.php
+├── CallRequestTest.php
+├── CallExecutionPayloadTest.php
+├── CallCompletionEventTest.php
+├── ConsultantPresenceServiceTest.php
+└── CallRequestServiceTest.php
+```
+
+### Integration Flow
+
+```
+CheckoutSession (payment complete)
+    ↓
+PostPaymentWorkflow::onPaymentConfirmed()
+    ↓
+CallRequestService::createFromCheckoutSession()
+    ↓ (creates CallRequest with product metadata)
+CallRequest [status: PENDING]
+    ↓
+[If consultant busy → reschedule]
+    ↓
+CallRequestService::reschedule(delayMinutes)
+    ↓
+CallRequest [status: SCHEDULED]
+    ↓
+[At scheduled time]
+    ↓
+CallExecutionService::buildExecutionPayload()
+    ↓
+Send to Asterisk/FastAGI
+    ↓
+CallRequest [status: IN_PROGRESS]
+    ↓
+[Call completes]
+    ↓
+Asterisk webhook → CallCompletionService::handleCompletion()
+    ↓
+CallRequest [status: COMPLETED]
+(with actual duration for PAYG billing)
+```
+
+### Key Services
+
+#### CallRequestService
+
+**Purpose**: Create and manage CallRequest lifecycle
+
+**Methods**:
+```php
+// Create from successful checkout
+createFromCheckoutSession(CheckoutSession $session): CallRequest
+
+// Reschedule with delay
+reschedule(string $originalRequestId, int $delayMinutes, ?int $postSessionBuffer): CallRequest
+
+// Mark as expired (initiation window passed)
+markExpired(string $requestId): void
+```
+
+#### ConsultantPresenceService
+
+**Purpose**: Track real-time consultant availability
+
+**Methods**:
+```php
+// Update from external system webhook
+updateFromWebhook(int $consultantId, ConsultantPresence $presence): void
+
+// Query current presence
+getCurrentPresence(int $consultantId): ?ConsultantPresence
+
+// Check if available for call
+isAvailableForCall(int $consultantId): bool
+```
+
+#### CallExecutionService
+
+**Purpose**: Prepare call execution for Asterisk
+
+**Methods**:
+```php
+// Validate readiness
+canExecuteNow(string $requestId): bool
+
+// Build Asterisk payload
+buildExecutionPayload(string $requestId): CallExecutionPayload
+
+// Mark as scheduled
+markAsScheduled(string $requestId): void
+```
+
+#### CallCompletionService
+
+**Purpose**: Process completion webhooks
+
+**Methods**:
+```php
+// Handle completion from Asterisk
+handleCompletion(CallCompletionEvent $event): ?CallRequest
+
+// Mark call started
+markInProgress(string $requestId): void
+```
+
+### Product Metadata Integration
+
+**Interface**: `ProductMetadataProvider`
+- Abstracts WooCommerce product configuration
+- Full-scope agent implements `WooCommerceProductMetadataProvider`
+- Consultants configure via Dokan product editor
+
+**Product Fields** (stored in WC product metadata):
+- `pricing_model`: 'payg' | 'prepaid'
+- `call_duration_minutes`: Maximum call length
+- `initiation_window_minutes`: How long client has to initiate
+- `prepaid_minutes`: For prepaid products only
+
+### Webhook Integration Points
+
+#### 1. Presence Webhook (External Call System → WordPress)
+
+**Endpoint**: `/wp-json/dlme/v1/presence` (full-scope agent creates)
+
+**Payload**:
+```json
+{
+  "consultant_id": 123,
+  "status": "in_call",
+  "timestamp": "2025-01-19T15:30:00Z",
+  "session_id": "ext_session_abc",
+  "estimated_session_end": "2025-01-19T15:45:00Z",
+  "current_call_request_id": "req_xyz789"
+}
+```
+
+**Handler**:
+```php
+$presence = ConsultantPresence::fromArray($webhookPayload);
+$presenceService->updateFromWebhook($consultantId, $presence);
+```
+
+#### 2. Completion Webhook (Asterisk → WordPress)
+
+**Endpoint**: `/wp-json/dlme/v1/call-completion` (full-scope agent creates)
+
+**Payload**:
+```json
+{
+  "call_request_id": "req_abc123",
+  "status": "completed",
+  "started_at": "2025-01-19T15:00:00Z",
+  "ended_at": "2025-01-19T15:23:00Z",
+  "duration_minutes": 23,
+  "consultant_answered": true,
+  "client_answered": true,
+  "disconnect_reason": "normal"
+}
+```
+
+**Handler**:
+```php
+$event = CallCompletionEvent::fromArray($webhookPayload);
+$completionService->handleCompletion($event);
+```
+
+### Database Tables (For Full-Scope Agent)
+
+#### wp_dlme_call_requests
+
+Stores CallRequest entities:
+- `id` (VARCHAR, PK): req_xxx
+- `checkout_session_id` (VARCHAR, INDEX)
+- `seller_id`, `buyer_id` (INT, INDEX)
+- `buyer_phone`, `buyer_email`
+- `product_id`, `sku`
+- `pricing_model`, `agreed_price`, `currency`, `prepaid_minutes`
+- `created_at`, `initiation_window_start`, `initiation_window_end`, `call_duration_minutes`
+- `scheduled_execution_time`
+- `status` (VARCHAR, INDEX): pending, scheduled, in_progress, completed, superseded, expired, failed
+- `actual_call_start_time`, `actual_call_end_time`, `actual_call_duration_minutes`
+- `call_completed_successfully` (BOOLEAN)
+- `correlation_id`, `referrer_url`
+- `superseded_by_request_id`, `superseded_request_id`
+
+**Indexes**:
+- `status` (for finding pending/scheduled requests)
+- `scheduled_execution_time` (for job processing)
+- `checkout_session_id` (for lookup)
+
+#### wp_dlme_consultant_presence
+
+Stores latest presence per consultant (upsert pattern):
+- `consultant_id` (INT, PK)
+- `status` (VARCHAR): idle, in_call, offline
+- `timestamp` (DATETIME)
+- `session_id` (VARCHAR, NULL)
+- `estimated_session_end` (DATETIME, NULL)
+- `current_call_request_id` (VARCHAR, NULL)
+- `updated_at` (DATETIME)
+
+### Logging Events
+
+All services emit structured PSR-3 logs:
+
+**ConsultantPresenceService**:
+- `dlme.presence.updated` (info)
+
+**CallRequestService**:
+- `dlme.call_request.created` (info)
+- `dlme.call_request.rescheduled` (info)
+- `dlme.call_request.expired` (info)
+
+**CallExecutionService**:
+- `dlme.call_execution.payload_built` (info)
+- `dlme.call_execution.scheduled` (info)
+- `dlme.call_execution.in_progress` (info)
+
+**CallCompletionService**:
+- `dlme.call_completion.received` (info)
+- `dlme.call_completion.request_not_found` (error)
+- `dlme.call_completion.processed` (info)
+
+### Design Decisions
+
+1. **CallRequest = Frozen Contract**: Immutable snapshot of pricing/timing at purchase
+2. **Custom Table Storage**: Not WC Order Items (complex lifecycle, high volume)
+3. **Presence via Webhook**: No active session tracking in WP (external system owns state)
+4. **Rescheduling Creates New Entity**: Original superseded, new request links back
+5. **Product Metadata Interface**: Framework-agnostic, full-scope implements WC integration
+
+### Testing
+
+All tests are pure PHP with no WordPress dependencies:
+- 47 new tests across 8 test files
+- In-memory repository implementations
+- Full coverage of business logic
+- 126 total tests, 457 assertions
+
+### Next Steps (Full-Scope Agent)
+
+1. Create database migrations for call_requests and consultant_presence tables
+2. Implement WooCommerceProductMetadataProvider
+3. Implement WpCallRequestRepository and WpConsultantPresenceRepository
+4. Create webhook endpoints for presence and completion
+5. Create PostPaymentCallRequestWorkflow implementation
+6. Build consultant dashboard UI (Dokan integration)
+7. Integrate with Asterisk/FastAGI for call execution
+8. Add job/cron for scheduled callback execution
+9. Implement expiry checking job
+
+---
